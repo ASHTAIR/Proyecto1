@@ -2,16 +2,21 @@ import React, { Component } from 'react';
 import { Route, NavLink, Switch } from 'react-router-dom';
 import './Principal.css';
 import Tienda from './Tienda/Libros';
+import { Row } from 'react-bootstrap';
 import MostrarPedidos from './MostrarPedidos/MostrarPedidos';
 
 class Blog extends Component {
 
     render() {
-        //<Redirect from="/" to="/Tienda" />
-        //                    <Route path='/RealizaPedido' component={RealizaPedido} />
 
         return (
             <div className="Blog">
+                <Row className="justify-content-md-center p-3">
+                    <h2>
+                        Libralia
+                        </h2>
+                </Row>
+
                 <header>
                     <nav>
                         <ul>

@@ -13,7 +13,7 @@ class Libro extends Component {
                     <Col><h3>{this.props.titulo}</h3></Col>
                 </Row>
                 <Row className="justify-content-md-center pt-3">
-                    <Col><img src={this.props.imagen} alt="Imagen libro"></img></Col>
+                    <Col><img src={this.props.imagen} alt="Imagen libro" width="200px" ></img></Col>
                 </Row>
                 <Row className="justify-content-md-center pt-3">
                     <p>{this.props.descripcion}</p>

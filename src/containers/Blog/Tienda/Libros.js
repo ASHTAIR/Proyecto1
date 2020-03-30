@@ -62,7 +62,7 @@ class Libros extends Component {
                         cantidad: 0
                     });
                 }
-                libros = libros.slice(0, 3);
+                libros = libros.slice(0, 6);
                 //console.log(libros);
                 this.setState({ libros: libros });
             }).catch(error => {

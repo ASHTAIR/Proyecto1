@@ -27,7 +27,7 @@ class MostrarPedidos extends React.Component {
                         idb: key,
                     });
                 }
-                pedidos = pedidos.slice(0, 3);
+                pedidos = pedidos.slice(0, 8);
                 this.setState({ pedidos: pedidos });
             }).catch(error => {
                 this.setState({ error: true });
