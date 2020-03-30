@@ -1,0 +1,17 @@
+.Cuadro {
+    border: 1px solid #eee;
+    box-shadow: 0 2px 3px #ccc;
+    background-color: #C0DDF5;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.Cuadro:hover,
+.Cuadro:active {
+    background-color: rgb(204, 127, 117);
+}
+
+.Author {
+    margin: 16px 0;
+    color: #ccc;
+}

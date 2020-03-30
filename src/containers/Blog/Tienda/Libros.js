@@ -1,17 +1,54 @@
 import React, { Component } from 'react';
 import axios from '../../../axios';
-import { Route, Link } from 'react-router-dom';
-import { Button, Row, Col, Form } from 'react-bootstrap';
+import { Redirect } from 'react-router-dom';
+import { Button, Row, Col, Form, Modal, Container } from 'react-bootstrap';
 
 import Libro from '../../../components/Post/Libro';
 import './Libros.css';
-import MostrarPedidos from '../MostrarPedidos/MostrarPedidos';
-import RealizaPedido from '../RealizaPedido/RealizaPedido';
 
 class Libros extends Component {
     state = {
         libros: [],
-        total: 0
+        total: 0,
+        show: false,
+        setShow: false,
+        formulario: false,
+        Nombre: "",
+        Apellidos: "",
+        direccion: "",
+        postal: "",
+        tarjeta: ""
+    }
+
+    handleClose = () => this.setState({ setShow: false });
+    handleShow = () => this.setState({ setShow: true });
+
+    handleform() {
+        this.setState({
+            setShow: false,
+            formulario: true
+        });
+
+    }
+
+    handleNombre = (nombre) => {
+        this.setState({ Nombre: nombre });
+    }
+
+    handleApellidos = (apellidos) => {
+        this.setState({ Apellidos: apellidos });
+    }
+
+    handledireccion = (dir) => {
+        this.setState({ direccion: dir });
+    }
+
+    handlepostal = (postal) => {
+        this.setState({ postal: postal });
+    }
+
+    handletarjeta = (tar) => {
+        this.setState({ tarjeta: tar });
     }
 
     componentDidMount() {
@@ -47,9 +84,6 @@ class Libros extends Component {
             }
 
         }
-        //console.log(precio);
-        //console.log(this.state.total);
-
         this.setState({
             carrito: estado,
             total: eval(this.state.total) + eval(precio),
@@ -76,58 +110,55 @@ class Libros extends Component {
         });
     }
 
-    pedidoDataHandler = () => {
-        const data = {
-            title: this.state.title,
-            body: this.state.content,
-            author: this.state.author
-        };
-        let pedido = null;
+    detallespedido = () => {
+        let p = [];
         for (let index = 0; index < this.state.libros.length; index++) {
             if (this.state.libros[index].cantidad > 0) {
-                pedido = pedido + <p>{this.state.libros[index].nombre}, Cantidad: this.state.libros[index].cantidad}</p>
+                p.push(<Row className="justify-content-md-center pt-2" key={this.state.libros[index].nombre}>
+                    <p>Libro {this.state.libros[index].nombre}, Cantidad {this.state.libros[index].cantidad}-----
+                    Precio/unidad {this.state.libros[index].precio} €/u
+                    </p>
+                </Row>);
+            }
+        }
+        return p;
+    }
+
+    pedidoDataHandler = () => {
+        var data = [{
+            anulado: false,
+            cliente: this.state.Nombre + " " + this.state.Apellidos,
+            direccion: this.state.direccion,
+            postal: this.state.postal,
+            tarjeta: this.state.tarjeta,
+            precio: this.state.total,
+        }];
+
+        this.setState({ submitted: true });
+
+        for (let index = 0; index < this.state.libros.length; index++) {
+            if (this.state.libros[index].cantidad > 0) {
+                data.push({
+                    libro: this.state.libros[index].nombre,
+                    cantidad: this.state.libros[index].cantidad,
+                });
             }
 
         }
-        /*
-        axios.post('/posts.json', data)
+        console.log(data);
+        
+        axios.post('/Pedidos.json', data)
             .then(response => {
-
-
-<Modal>
-                    <div className="modal" tabindex="-1" role="dialog">
-                        <div className="modal-dialog" role="document">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Resumen de compra</h5>
-                                    <button type="button" className="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div className="modal-body">
-                                    <p>Aquí va tu pedido</p>
-                                </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn btn-primary">Realizar pedido</button>
-                                    <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Modal>
-
-
-
+                alert('Pedido guardado');
                 console.log(response);
-                this.setState( { submitted: true } );
-                this.props.history.push('/posts');
+                this.props.history.push('/Tienda');
             });
-            */
+            
     }
 
     render() {
-        let libros = <p style={{ textAlign: 'center' }}>Algo ha ido mal...</p>;
-        if (!this.state.error) {
+        let libros = null;
+        if (!this.state.formulario) {
             libros = this.state.libros.map(libro => {
                 return <article key={libro.idb}><Libro
                     titulo={libro.nombre}
@@ -158,27 +189,113 @@ class Libros extends Component {
             });
         }
 
+        let ventana = null;
+
+        if (!this.state.formulario) {
+            ventana = (
+                <article>
+                    <Row className="justify-content-md-center pt-3">
+                        <h3>Total del pedido: {this.state.total} €</h3>
+                    </Row>
+                    <Row className="justify-content-md-center pt-3">
+                        <Button onClick={() => this.handleShow()} variant="btn btn-primary">Realizar Pedido</Button>
+                    </Row>
+                </article>
+            );
+        }
+
+        if (this.state.setShow) {
+            ventana = (
+                <Row className="justify-content-md-center">
+                    <Button onClick={() => this.handleShow()} variant="btn btn-primary">Realizar Pedido</Button>
+
+                    <Modal show={this.state.setShow} onHide={() => this.handleClose()}>
+                        <Modal.Header closeButton>
+                            <Modal.Title><h4>Resumen de la compra</h4></Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <Container>
+                                {this.detallespedido()}
+                                <Row className="justify-content-md-center">
+                                    <h6>Total compra: {this.state.total} €</h6>
+                                </Row>
+
+                            </Container>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => this.handleClose()}>
+                                Cancelar
+                            </Button>
+                            <Button onClick={() => this.handleform()}>
+                                Comprar
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+                </Row>
+
+            );
+        }
+
+
+        let formulario = null;
+        let redirect = null;
+
+        if (this.state.submitted) {
+            redirect = <Redirect to="/MostrarPedidos" />;
+        }
+        if (this.state.formulario) {
+            formulario = (
+                <div className="NewPost">
+                    {redirect}
+                    <Row className="justify-content-md-center pt-3">
+                        <h3>Finaliza tu pedido</h3>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <label>Nombre</label>
+                            <input type="text" value={this.state.Nombre} onChange={(event) => this.handleNombre(event.target.value)} />
+                        </Col>
+                        <Col>
+                            <label>Apellidos</label>
+                            <input type="text" value={this.state.Apellidos} onChange={(event) => this.handleApellidos(event.target.value)} />
+                        </Col>
+                    </Row>
+                    <Row>
+                        <Col>
+                            <label>Dirección de envío</label>
+                            <input type="text" value={this.state.direccion} onChange={(event) => this.handledireccion(event.target.value)} />
+                        </Col>
+                        <Col>
+                            <label>Código postal</label>
+                            <input type="text" value={this.state.postal} onChange={(event) => this.handlepostal(event.target.value)} />
+                        </Col>
+                    </Row>
+                    <Row className="justify-content-md-center pt-3">
+                        <Col >
+                            <label>Número de tarjeta</label>
+                            <input type="text" value={this.state.tarjeta} onChange={(event) => this.handletarjeta(event.target.value)} />
+                        </Col>
+                    </Row>
+                    <button onClick={this.pedidoDataHandler}>Realizar pedido</button>
+                </div>
+            );
+        }
+
         return (
             <article>
                 <Row>
                     <section className="Posts">
                         {libros}
                     </section>
-                    <Route path={this.props.match.url + '/:id'} exact component={RealizaPedido} />
                 </Row>
-                <Row className="justify-content-md-center pt-5">
-                    <h3>Total del pedido: {this.state.total}</h3>
+                <Row className="justify-content-md-center">
+                    {ventana}
                 </Row>
-                <Row className="justify-content-md-center pt-5">
-                    <Link to={{
-                        pathname: '/RealizaPedido',
-                        hash: '#submit',
-                        search: '?quick-submit=true'
-                    }}><Button>Realizar Pedido</Button>
-                    </Link>
-                    <Route path="/RealizaPedido" component={RealizaPedido} />
+                <Row>
+                    {formulario}
                 </Row>
             </article>
+
         );
     }
 }

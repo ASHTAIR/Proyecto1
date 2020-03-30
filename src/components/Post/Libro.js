@@ -4,9 +4,6 @@ import { Row, Col } from 'react-bootstrap';
 import './Libro.css';
 
 class Libro extends Component {
-    state = {
-        cantidad: 0
-    }
 
     render() {
         let libro = null;

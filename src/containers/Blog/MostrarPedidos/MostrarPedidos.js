@@ -1,68 +1,133 @@
 import React from 'react';
 import axios from '../../../axios';
-
+//de Full post
 import './MostrarPedidos.css';
+import Pedido from '../Pedidos/Pedido';
+import { Row, Button, Modal, Container } from 'react-bootstrap';
+import Detalles from '../DetallesPedido/DetallesPedido';
 
-class FullPost extends React.Component {
+class MostrarPedidos extends React.Component {
     state = {
-        loadedPost: null
+        loadedPost: null,
+        pedidos: [],
+        selectedPedidoId: null,
+        indicehandler: null,
+        confirmacion: false,
+        show: false,
+        setShow: false,
     }
 
-    componentDidUpdate () {
-        console.log('/libros/' + this.props.match.params.id)
-        if ( this.props.match.params.id ) {
-            if ( !this.state.loadedPost || (this.state.loadedPost && this.state.loadedPost.idb !== this.props.match.params.id) ) {
-                axios.get('/libros.json?orderBy="$key"&equalTo="' + this.props.match.params.id + '"')
-                    .then(response => {
-                        console.log(response);
-                        const posts = [];
-                        for (let key in response.data) {
-                            posts.push({
-                                ...response.data[key],
-                                idb: key
-                            });
-                        }
-                        console.log(posts);
-                        this.setState({ loadedPost: posts[0] });
+    componentDidMount() {
+        axios.get('/Pedidos.json')
+            .then(response => {
+                let pedidos = [];
+                for (let key in response.data) {
+                    pedidos.push({
+                        ...response.data[key],
+                        idb: key,
                     });
+                }
+                pedidos = pedidos.slice(0, 3);
+                this.setState({ pedidos: pedidos });
+            }).catch(error => {
+                this.setState({ error: true });
+            });
+    }
+
+    pedidoSelectedHandler = (id) => {
+        let estado = this.state.pedidos;
+        this.props.history.push('/MostrarPedidos/' + id);
+        for (let index = 0; index < estado.length; index++) {
+            if (estado[index].idb === id) {
+                this.setState({ indicehandler: index });
             }
         }
+        this.setState({ selectedPedidoId: id });
     }
 
-    deleteUpdatePostHandler = () => {
-        console.log('ddddddddddd')
-        axios.delete('/posts/' + this.props.match.params.id + '.json')
-            .then(response => {
-                console.log(response);
-            });
-        // axios.put('/posts/' + this.props.id + '.json', {
-        //     ...this.state.loadedPost,
-        //     author: "new author added " + new Date()
-        // })
-        //     .then(response => {
-        //         console.log(response);
-        //     });
-    }
-
-    render () {
-        let post = <p style={{ textAlign: 'center' }}>Please select a Post!</p>;
-        if ( this.props.id ) {
-            post = <p style={{ textAlign: 'center' }}>Loading...!</p>;
+    anularpedido = (id) => {
+        let estado = this.state.pedidos;
+        for (let index = 0; index < estado.length; index++) {
+            if (estado[index].idb === id) {
+                estado[index][0].anulado = true;
+                id = estado[index].idb;
+            }
         }
-        if ( this.state.loadedPost ) {
-            post = (
-                <div className="FullPost">
-                    <h1>{this.state.loadedPost.title}</h1>
-                    <p>{this.state.loadedPost.body}</p>
-                    <div className="Edit">
-                        <button onClick={this.deleteUpdatePostHandler} className="Delete">DeleteSSS</button>
-                    </div>
-                </div>
+
+        axios.put('/Pedidos.json', estado)
+            .then(response => {
+                alert("Estamos enviando a nuestros mejores asesinos para anular el pedido");
+                this.props.history.push('/MostrarPedidos');
+
+            });
+    }
+
+
+    
+    render() {
+
+        let ventana = null;
+
+        if (this.state.setShow) {
+            ventana = (
+                <Row className="justify-content-md-center">
+                    <Button onClick={() => this.handleShow()} variant="btn btn-primary">Realizar Pedido</Button>
+
+                    <Modal show={this.state.setShow} onHide={() => this.handleClose()}>
+                        <Modal.Header closeButton>
+                            <Modal.Title><h4>Resumen de la compra</h4></Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            <Container>
+                                <Row className="justify-content-md-center">
+                                    <h6>¿Deseas cancelar el pedido?</h6>
+                                </Row>
+
+                            </Container>
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => this.handleClose()}>
+                                Cancelar
+                            </Button>
+                            <Button className="bt-danger" onClick={() => this.handleform()}>
+                                Anular
+                            </Button>
+                        </Modal.Footer>
+                    </Modal>
+                </Row>
 
             );
         }
-        return post;
+
+        let pedidos = null;
+        if (!this.state.formulario) {
+            pedidos = this.state.pedidos.map(pedido => {
+                return <article key={pedido.idb}>
+                    <Row className="justify-content-md-center pt-2">
+                        <Pedido
+                            pedido={pedido}
+                            clicked={() => this.pedidoSelectedHandler(pedido.idb)}
+                        />
+                    </Row>
+                    <Row className="justify-content-md-center pt-2">
+                        <Button onClick={() => this.anularpedido(pedido.idb)} variant="btn btn-primary">Anular pedido</Button>
+                    </Row>
+                </article>
+            });
+        }
+
+        return (
+            <article>
+                <section>
+                    {pedidos}
+                </section>
+                <section></section>
+                <section>
+                    <Detalles pedido={this.state.pedidos[this.state.indicehandler]}/>
+                </section>
+            </article>
+        );
     }
 }
 
-export default FullPost;
+export default MostrarPedidos;

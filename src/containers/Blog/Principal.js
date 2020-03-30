@@ -1,19 +1,21 @@
 import React, { Component } from 'react';
-// import axios from 'axios';
-import { Route, NavLink, Switch, Redirect } from 'react-router-dom';
-//import Button from 'react-bootstrap/Button';
+import { Route, NavLink, Switch } from 'react-router-dom';
 import './Principal.css';
 import Tienda from './Tienda/Libros';
 import MostrarPedidos from './MostrarPedidos/MostrarPedidos';
 
 class Blog extends Component {
-    render () {
+
+    render() {
+        //<Redirect from="/" to="/Tienda" />
+        //                    <Route path='/RealizaPedido' component={RealizaPedido} />
+
         return (
             <div className="Blog">
                 <header>
                     <nav>
                         <ul>
-                        <li><NavLink
+                            <li><NavLink
                                 to="/Tienda/"
                                 exact
                                 activeClassName="my-active"
@@ -25,16 +27,20 @@ class Blog extends Component {
                                 pathname: '/MostrarPedidos',
                                 hash: '#submit',
                                 search: '?quick-submit=true'
-                            }}>Mostrar Pedidos</NavLink></li>
+                            }}>Pedidos</NavLink></li>
                         </ul>
                     </nav>
                 </header>
                 <Switch>
                     <Route path="/MostrarPedidos" component={MostrarPedidos} />
                     <Route path="/Tienda" component={Tienda} />
-                    <Redirect from="/" to="/Tienda" />
+
                 </Switch>
+
+
             </div>
+
+
         );
     }
 }
